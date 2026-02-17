@@ -7,7 +7,7 @@
  *
  * Key points:
  *   - Extend AbstractBench (handles autoloader loading)
- *   - Implement getSubjectKey() returning a key from benchmark-config.php
+ *   - Implement getSubjectKey() returning a key from config.php
  *   - Optionally override init() to set up library-specific state
  *   - Write bench* methods with PHPBench attributes
  */
@@ -25,7 +25,7 @@ class ExampleStableSelectBench extends AbstractBench
 
     protected function getSubjectKey(): string
     {
-        return 'stable'; // matches key in benchmark-config.php
+        return 'stable'; // matches key in config.php
     }
 
     protected function init(): void

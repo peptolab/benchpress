@@ -1,4 +1,4 @@
-# benchpress
+# Benchpress
 
 A config-driven [PHPBench](https://phpbench.readthedocs.io/) harness for comparing multiple PHP library implementations side-by-side.
 
@@ -7,23 +7,23 @@ Designed for cases where you need to benchmark N versions or forks of the same l
 ## Quick Start
 
 ```bash
-git clone <repo-url>
+git clone git@github.com:peptolab/benchpress.git
 cd benchpress
 composer install
-make setup    # generates subjects/ from benchmark-config.php
+make setup    # generates subjects/ from config.php
 make bench    # runs benchmarks, prints comparison table
 ```
 
 ## How It Works
 
-1. **`benchmark-config.php`** defines "subjects" — the libraries to compare, with their Composer dependencies
+1. **`config.php`** defines "subjects" — the libraries to compare, with their Composer dependencies
 2. **`make setup`** auto-generates a separate `subjects/{name}/` directory with its own `composer.json` and `vendor/` for each subject
 3. **You write benchmark classes** in `benchmarks/Bench/`, extending `AbstractBench`. Each class specifies which subject it benchmarks via `getSubjectKey()`
 4. **PHPBench runs with process isolation** — each benchmark iteration is a separate PHP process, loading only its subject's autoloader. No namespace collisions.
 
 ## Adding a Library
 
-1. Add an entry to `benchmark-config.php`:
+1. Add an entry to `config.php`:
 
 ```php
 'my-fork' => [
@@ -87,7 +87,7 @@ See `examples/ExampleSelectBench.php` for a fuller example.
 
 ```
 benchpress/
-├── benchmark-config.php          # Subject definitions (THE config)
+├── config.php          # Subject definitions (THE config)
 ├── benchmarks/
 │   ├── AbstractBench.php         # Thin base class (autoloader + init hook)
 │   ├── Bench/                    # Your benchmark classes go here

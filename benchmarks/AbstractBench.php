@@ -10,7 +10,7 @@ use PhpBench\Attributes as Bench;
 abstract class AbstractBench
 {
     /**
-     * Return the subject key from benchmark-config.php (e.g., 'stable', 'beta').
+     * Return the subject key from config.php (e.g., 'stable', 'beta').
      */
     abstract protected function getSubjectKey(): string;
 

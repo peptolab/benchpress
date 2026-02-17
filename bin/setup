@@ -3,11 +3,11 @@
 
 declare(strict_types=1);
 
-$config = require dirname(__DIR__) . '/benchmark-config.php';
+$config = require dirname(__DIR__) . '/config.php';
 $subjectsDir = dirname(__DIR__) . '/subjects';
 
 if (empty($config['subjects'])) {
-    echo "No subjects defined in benchmark-config.php.\n";
+    echo "No subjects defined in config.php.\n";
     exit(1);
 }
 
