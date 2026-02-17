@@ -19,7 +19,10 @@
         "bench": "phpbench run --report=compare",
         "bench:store": "phpbench run --tag=latest --report=compare",
         "bench:compare": "phpbench run --ref=latest --report=compare",
-        "bench:csv": "phpbench run --report=compare --output=delimited",
+        "report": "php bin/report",
+        "report:md": "php bin/report --format=md",
+        "report:csv": "php bin/report --format=csv",
+        "report:json": "php bin/report --format=json",
         "clean": "rm -rf subjects/ .phpbench/storage/ reports/*.md reports/*.csv reports/*.html"
     },
     "config": {

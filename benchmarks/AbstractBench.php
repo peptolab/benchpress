@@ -28,7 +28,7 @@ abstract class AbstractBench
 
         if (!file_exists($autoloader)) {
             throw new \RuntimeException(sprintf(
-                'Subject "%s" not installed. Run: make setup',
+                'Subject "%s" not installed. Run: composer setup',
                 $this->getSubjectKey(),
             ));
         }

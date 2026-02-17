@@ -98,10 +98,13 @@ See `examples/` for a complete working example.
 | Command | Description |
 |---------|-------------|
 | `composer setup` | Generate subjects from config + install deps |
-| `composer bench` | Run all benchmarks with comparison report |
+| `composer bench` | Run all benchmarks (PHPBench default output) |
 | `composer bench:store` | Run + store results as baseline |
 | `composer bench:compare` | Run + compare against stored baseline |
-| `composer bench:csv` | Export as CSV |
+| `composer report` | Run + display side-by-side comparison table |
+| `composer report:md` | Run + output Markdown comparison table |
+| `composer report:csv` | Run + output CSV |
+| `composer report:json` | Run + output JSON |
 | `composer clean` | Remove subjects, stored results, reports |
 
 ## Project Structure
@@ -119,6 +122,7 @@ benchpress/
 ├── examples/                     # Reference examples
 ├── reports/                      # Generated output
 ├── bin/setup                     # Subject generator script
+├── bin/report                    # Comparison report generator
 ├── composer.json                 # Harness deps (phpbench only)
 └── phpbench.json                 # PHPBench config
 ```
