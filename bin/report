@@ -21,6 +21,9 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
+use Benchpress\Report\ResultRenderer;
+use Benchpress\Report\TimeFormatter;
+
 /**
  * Parse arguments.
  */
@@ -161,135 +164,11 @@ ksort($results);
  * Output in the requested format.
  */
 
-match ($format) {
-    'cli'  => outputCli($results, $subjects),
-    'md'   => outputMarkdown($results, $subjects),
-    'csv'  => outputCsv($results, $subjects),
-    'json' => outputJson($results, $subjects),
+$renderer = new ResultRenderer();
+
+echo match ($format) {
+    'cli'  => $renderer->renderCli($results, $subjects),
+    'md'   => $renderer->renderMarkdown($results, $subjects),
+    'csv'  => $renderer->renderCsv($results, $subjects),
+    'json' => $renderer->renderJson($results, $subjects),
 };
-
-/**
- * Format nanoseconds into a human-readable time string.
- */
-function formatTime(float $nanoseconds): string
-{
-    if ($nanoseconds >= 1_000_000) {
-        return sprintf('%.2fms', $nanoseconds / 1_000_000);
-    }
-    if ($nanoseconds >= 1_000) {
-        return sprintf('%.2fμs', $nanoseconds / 1_000);
-    }
-    return sprintf('%.0fns', $nanoseconds);
-}
-
-/**
- * Output results as a CLI table.
- */
-function outputCli(array $results, array $subjects): void
-{
-    $testWidth = max(4, ...array_map('strlen', array_keys($results)));
-    $colWidth = max(10, ...array_map('strlen', $subjects));
-
-    $header = str_pad('Test', $testWidth);
-    foreach ($subjects as $s) {
-        $header .= '  ' . str_pad($s, $colWidth);
-    }
-    echo $header . "\n";
-    echo str_repeat('─', strlen($header)) . "\n";
-
-    foreach ($results as $method => $data) {
-        $times = array_map(fn($d) => $d['mean'], $data);
-        $fastest = min($times);
-
-        $row = str_pad($method, $testWidth);
-        foreach ($subjects as $s) {
-            if (isset($data[$s])) {
-                $time = formatTime($data[$s]['mean']);
-                $ratio = $data[$s]['mean'] / $fastest;
-                $suffix = $ratio > 1.05 ? sprintf(' (%.1fx)', $ratio) : '';
-                $cell = $time . $suffix;
-            } else {
-                $cell = '-';
-            }
-            $row .= '  ' . str_pad($cell, $colWidth);
-        }
-        echo $row . "\n";
-    }
-}
-
-/**
- * Output results as a Markdown table.
- */
-function outputMarkdown(array $results, array $subjects): void
-{
-    echo '| Test |';
-    foreach ($subjects as $s) {
-        echo " {$s} |";
-    }
-    echo "\n|------|";
-    foreach ($subjects as $s) {
-        echo str_repeat('-', strlen($s) + 2) . '|';
-    }
-    echo "\n";
-
-    foreach ($results as $method => $data) {
-        $times = array_map(fn($d) => $d['mean'], $data);
-        $fastest = min($times);
-
-        echo "| {$method} |";
-        foreach ($subjects as $s) {
-            if (isset($data[$s])) {
-                $time = formatTime($data[$s]['mean']);
-                $ratio = $data[$s]['mean'] / $fastest;
-                $suffix = $ratio > 1.05 ? sprintf(' (%.1fx)', $ratio) : '';
-                echo " {$time}{$suffix} |";
-            } else {
-                echo ' - |';
-            }
-        }
-        echo "\n";
-    }
-}
-
-/**
- * Output results as CSV.
- */
-function outputCsv(array $results, array $subjects): void
-{
-    $out = fopen('php://stdout', 'w');
-
-    fputcsv($out, array_merge(['test'], $subjects));
-
-    foreach ($results as $method => $data) {
-        $row = [$method];
-        foreach ($subjects as $s) {
-            $row[] = isset($data[$s]) ? round($data[$s]['mean'], 2) : '';
-        }
-        fputcsv($out, $row);
-    }
-
-    fclose($out);
-}
-
-/**
- * Output results as JSON.
- */
-function outputJson(array $results, array $subjects): void
-{
-    $output = [
-        'subjects' => $subjects,
-        'results'  => [],
-    ];
-
-    foreach ($results as $method => $data) {
-        $entry = ['test' => $method];
-        foreach ($subjects as $s) {
-            if (isset($data[$s])) {
-                $entry[$s] = $data[$s];
-            }
-        }
-        $output['results'][] = $entry;
-    }
-
-    echo json_encode($output, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
-}

@@ -46,9 +46,10 @@
  * ],
  */
 
+declare(strict_types=1);
+
 return [
-    'subjects' => [
-    ],
+    'subjects' => [],
 
     /**
      * Shared Composer config applied to all subjects.
