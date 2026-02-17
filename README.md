@@ -69,19 +69,22 @@ use PhpBench\Attributes as Bench;
 
 class MyForkSelectBench extends AbstractBench implements SelectBenchInterface
 {
+    /**
+     * Matches the key in config.php.
+     */
     protected function getSubjectKey(): string
     {
-        return 'my-fork'; // matches key in config.php
+        return 'my-fork';
     }
 
     #[Bench\Revs(1000)]
     #[Bench\Iterations(10)]
     public function benchSimpleSelect(): void
     {
-        // Your benchmark using the subject's library
+        /** Your benchmark using the subject's library */
     }
 
-    // ... benchMediumSelect(), benchComplexSelect()
+    /** benchMediumSelect(), benchComplexSelect(), etc. */
 }
 ```
 

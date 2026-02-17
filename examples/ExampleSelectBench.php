@@ -9,7 +9,24 @@
  *   - Override init() to set up library-specific state after autoloader loads
  *   - PHPBench attributes go on the concrete methods
  *
- * Copy this and SelectBenchInterface.php into benchmarks/Bench/ and customize.
+ * Copy this and SelectBenchInterface.php into benchmarks/Bench/ and customise.
+ *
+ * Example init() usage:
+ *
+ *     protected function init(): void
+ *     {
+ *         $this->platform = new \PhpDb\Adapter\Platform\Sql92();
+ *     }
+ *
+ * Example benchmark method:
+ *
+ *     public function benchSimpleSelect(): void
+ *     {
+ *         $s = new \PhpDb\Sql\Select('users');
+ *         $s->columns(['id', 'name']);
+ *         $s->where(['active' => 1]);
+ *         $s->getSqlString($this->platform);
+ *     }
  */
 
 declare(strict_types=1);
@@ -21,19 +38,13 @@ use PhpBench\Attributes as Bench;
 
 class ExampleStableSelectBench extends AbstractBench implements SelectBenchInterface
 {
-    // private $platform;
-
     protected function getSubjectKey(): string
     {
-        return 'stable'; // matches key in config.php
+        return 'stable';
     }
 
     protected function init(): void
     {
-        // Called after the subject's autoloader is loaded.
-        // Set up any library-specific objects here:
-        //
-        // $this->platform = new \PhpDb\Adapter\Platform\Sql92();
     }
 
     #[Bench\Revs(1000)]
@@ -41,12 +52,6 @@ class ExampleStableSelectBench extends AbstractBench implements SelectBenchInter
     #[Bench\Groups(['select', 'simple'])]
     public function benchSimpleSelect(): void
     {
-        // Build + render a simple query using the subject's library:
-        //
-        // $s = new \PhpDb\Sql\Select('users');
-        // $s->columns(['id', 'name']);
-        // $s->where(['active' => 1]);
-        // $s->getSqlString($this->platform);
     }
 
     #[Bench\Revs(1000)]
@@ -54,7 +59,6 @@ class ExampleStableSelectBench extends AbstractBench implements SelectBenchInter
     #[Bench\Groups(['select', 'medium'])]
     public function benchMediumSelect(): void
     {
-        // Build + render a medium-complexity query
     }
 
     #[Bench\Revs(1000)]
@@ -62,6 +66,5 @@ class ExampleStableSelectBench extends AbstractBench implements SelectBenchInter
     #[Bench\Groups(['select', 'complex'])]
     public function benchComplexSelect(): void
     {
-        // Build + render a complex query with joins, subqueries, etc.
     }
 }

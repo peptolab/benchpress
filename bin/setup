@@ -1,6 +1,13 @@
 #!/usr/bin/env php
 <?php
 
+/**
+ * Benchpress subject setup script.
+ *
+ * Reads config.php, generates a separate subjects/{key}/composer.json
+ * for each subject, and runs composer install in each directory.
+ */
+
 declare(strict_types=1);
 
 $config = require dirname(__DIR__) . '/config.php';
@@ -23,7 +30,9 @@ foreach ($config['subjects'] as $key => $subject) {
         mkdir($dir, 0755, true);
     }
 
-    // Build composer.json by merging shared + subject config
+    /**
+     * Build composer.json by merging shared + subject config.
+     */
     $composerJson = [
         'name'        => "benchmark-subject/{$key}",
         'description' => "Benchmark subject: {$name}",
@@ -58,7 +67,9 @@ foreach ($config['subjects'] as $key => $subject) {
         json_encode($composerJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n"
     );
 
-    // Run composer install
+    /**
+     * Run composer install in the subject directory.
+     */
     $cmd = sprintf(
         'cd %s && composer install --no-interaction --prefer-dist 2>&1',
         escapeshellarg($dir)
