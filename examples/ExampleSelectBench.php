@@ -1,15 +1,15 @@
 <?php
 
 /**
- * Example: How to write a benchmark class for a subject.
- *
- * Copy this into benchmarks/Bench/ and customize for your library.
+ * Example: A concrete benchmark class for the "stable" subject.
  *
  * Key points:
- *   - Extend AbstractBench (handles autoloader loading)
- *   - Implement getSubjectKey() returning a key from config.php
- *   - Optionally override init() to set up library-specific state
- *   - Write bench* methods with PHPBench attributes
+ *   - Extends AbstractBench (handles autoloader loading via getSubjectKey)
+ *   - Implements SelectBenchInterface (enforces the benchmark contract)
+ *   - Override init() to set up library-specific state after autoloader loads
+ *   - PHPBench attributes go on the concrete methods
+ *
+ * Copy this and SelectBenchInterface.php into benchmarks/Bench/ and customize.
  */
 
 declare(strict_types=1);
@@ -19,7 +19,7 @@ namespace Benchpress\Bench;
 use Benchpress\AbstractBench;
 use PhpBench\Attributes as Bench;
 
-class ExampleStableSelectBench extends AbstractBench
+class ExampleStableSelectBench extends AbstractBench implements SelectBenchInterface
 {
     // private $platform;
 

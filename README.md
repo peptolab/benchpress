@@ -21,9 +21,11 @@ make bench    # runs benchmarks, prints comparison table
 3. **You write benchmark classes** in `benchmarks/Bench/`, extending `AbstractBench`. Each class specifies which subject it benchmarks via `getSubjectKey()`
 4. **PHPBench runs with process isolation** — each benchmark iteration is a separate PHP process, loading only its subject's autoloader. No namespace collisions.
 
-## Adding a Library
+## Usage
 
-1. Add an entry to `config.php`:
+### 1. Define subjects in `config.php`
+
+Each subject is a library to benchmark, with its Composer dependencies:
 
 ```php
 'my-fork' => [
@@ -40,35 +42,56 @@ make bench    # runs benchmarks, prints comparison table
 ],
 ```
 
-2. Create a benchmark class in `benchmarks/Bench/`:
+### 2. Define a benchmark interface
+
+Create an interface in `benchmarks/Bench/` that defines the contract all subjects must honour. This guarantees every subject runs the same set of tests:
 
 ```php
-<?php
+namespace Benchpress\Bench;
 
+interface SelectBenchInterface
+{
+    public function benchSimpleSelect(): void;
+    public function benchMediumSelect(): void;
+    public function benchComplexSelect(): void;
+}
+```
+
+### 3. Write a concrete class per subject
+
+Each class extends `AbstractBench` (handles autoloader isolation) and implements your interface (enforces the contract):
+
+```php
 namespace Benchpress\Bench;
 
 use Benchpress\AbstractBench;
 use PhpBench\Attributes as Bench;
 
-class MyForkSelectBench extends AbstractBench
+class MyForkSelectBench extends AbstractBench implements SelectBenchInterface
 {
     protected function getSubjectKey(): string
     {
-        return 'my-fork';
+        return 'my-fork'; // matches key in config.php
     }
 
     #[Bench\Revs(1000)]
     #[Bench\Iterations(10)]
-    public function benchSomething(): void
+    public function benchSimpleSelect(): void
     {
         // Your benchmark using the subject's library
     }
+
+    // ... benchMediumSelect(), benchComplexSelect()
 }
 ```
 
-3. Run `make setup && make bench`.
+### 4. Run
 
-See `examples/ExampleSelectBench.php` for a fuller example.
+```bash
+make setup && make bench
+```
+
+See `examples/` for a complete working example.
 
 ## Available Commands
 
