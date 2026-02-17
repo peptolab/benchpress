@@ -14,6 +14,14 @@
             "Benchpress\\": "benchmarks/"
         }
     },
+    "scripts": {
+        "setup": "php bin/setup",
+        "bench": "phpbench run --report=compare",
+        "bench:store": "phpbench run --tag=latest --report=compare",
+        "bench:compare": "phpbench run --ref=latest --report=compare",
+        "bench:csv": "phpbench run --report=compare --output=delimited",
+        "clean": "rm -rf subjects/ .phpbench/storage/ reports/*.md reports/*.csv reports/*.html"
+    },
     "config": {
         "sort-packages": true
     }

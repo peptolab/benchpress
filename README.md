@@ -10,14 +10,14 @@ Designed for cases where you need to benchmark N versions or forks of the same l
 git clone git@github.com:peptolab/benchpress.git
 cd benchpress
 composer install
-make setup    # generates subjects/ from config.php
-make bench    # runs benchmarks, prints comparison table
+composer setup    # generates subjects/ from config.php
+composer bench    # runs benchmarks, prints comparison table
 ```
 
 ## How It Works
 
 1. **`config.php`** defines "subjects" — the libraries to compare, with their Composer dependencies
-2. **`make setup`** auto-generates a separate `subjects/{name}/` directory with its own `composer.json` and `vendor/` for each subject
+2. **`composer setup`** auto-generates a separate `subjects/{name}/` directory with its own `composer.json` and `vendor/` for each subject
 3. **You write benchmark classes** in `benchmarks/Bench/`, extending `AbstractBench`. Each class specifies which subject it benchmarks via `getSubjectKey()`
 4. **PHPBench runs with process isolation** — each benchmark iteration is a separate PHP process, loading only its subject's autoloader. No namespace collisions.
 
@@ -88,7 +88,7 @@ class MyForkSelectBench extends AbstractBench implements SelectBenchInterface
 ### 4. Run
 
 ```bash
-make setup && make bench
+composer setup && composer bench
 ```
 
 See `examples/` for a complete working example.
@@ -97,14 +97,12 @@ See `examples/` for a complete working example.
 
 | Command | Description |
 |---------|-------------|
-| `make setup` | Generate subjects from config + install deps |
-| `make bench` | Run all benchmarks with comparison report |
-| `make bench-store` | Run + store results as baseline |
-| `make compare` | Run + compare against stored baseline |
-| `make report-md` | Generate Markdown report |
-| `make report-csv` | Export as CSV |
-| `make clean` | Remove subjects, stored results, reports |
-| `make help` | Show available targets |
+| `composer setup` | Generate subjects from config + install deps |
+| `composer bench` | Run all benchmarks with comparison report |
+| `composer bench:store` | Run + store results as baseline |
+| `composer bench:compare` | Run + compare against stored baseline |
+| `composer bench:csv` | Export as CSV |
+| `composer clean` | Remove subjects, stored results, reports |
 
 ## Project Structure
 
@@ -122,8 +120,7 @@ benchpress/
 ├── reports/                      # Generated output
 ├── bin/setup                     # Subject generator script
 ├── composer.json                 # Harness deps (phpbench only)
-├── phpbench.json                 # PHPBench config
-└── Makefile
+└── phpbench.json                 # PHPBench config
 ```
 
 ## Requirements
