@@ -1,6 +1,6 @@
 {
-    "name": "peptolab/peptolab-benchmark",
-    "description": "PHPBench harness for comparing library implementations",
+    "name": "peptolab/benchpress",
+    "description": "A configurable PHP benchmarking harness suite",
     "type": "project",
     "license": "MIT",
     "require": {
@@ -11,7 +11,7 @@
     },
     "autoload": {
         "psr-4": {
-            "PeptolabBenchmark\\": "benchmarks/"
+            "Benchpress\\": "benchmarks/"
         }
     },
     "config": {

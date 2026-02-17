@@ -1,4 +1,4 @@
-# peptolab-benchmark
+# benchpress
 
 A config-driven [PHPBench](https://phpbench.readthedocs.io/) harness for comparing multiple PHP library implementations side-by-side.
 
@@ -8,7 +8,7 @@ Designed for cases where you need to benchmark N versions or forks of the same l
 
 ```bash
 git clone <repo-url>
-cd peptolab-benchmark
+cd benchpress
 composer install
 make setup    # generates subjects/ from benchmark-config.php
 make bench    # runs benchmarks, prints comparison table
@@ -45,9 +45,9 @@ make bench    # runs benchmarks, prints comparison table
 ```php
 <?php
 
-namespace PeptolabBenchmark\Bench;
+namespace Benchpress\Bench;
 
-use PeptolabBenchmark\AbstractBench;
+use Benchpress\AbstractBench;
 use PhpBench\Attributes as Bench;
 
 class MyForkSelectBench extends AbstractBench
@@ -86,7 +86,7 @@ See `examples/ExampleSelectBench.php` for a fuller example.
 ## Project Structure
 
 ```
-peptolab-benchmark/
+benchpress/
 ├── benchmark-config.php          # Subject definitions (THE config)
 ├── benchmarks/
 │   ├── AbstractBench.php         # Thin base class (autoloader + init hook)

@@ -14,9 +14,9 @@
 
 declare(strict_types=1);
 
-namespace PeptolabBenchmark\Bench;
+namespace Benchpress\Bench;
 
-use PeptolabBenchmark\AbstractBench;
+use Benchpress\AbstractBench;
 use PhpBench\Attributes as Bench;
 
 class ExampleStableSelectBench extends AbstractBench

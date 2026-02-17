@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PeptolabBenchmark;
+namespace Benchpress;
 
 use PhpBench\Attributes as Bench;
 
