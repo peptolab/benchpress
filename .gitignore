@@ -1,0 +1,6 @@
+/vendor/
+/subjects/
+/.phpbench/
+/reports/*.md
+/reports/*.csv
+/reports/*.html

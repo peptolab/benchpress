@@ -1,0 +1,91 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$config = require dirname(__DIR__) . '/benchmark-config.php';
+$subjectsDir = dirname(__DIR__) . '/subjects';
+
+if (empty($config['subjects'])) {
+    echo "No subjects defined in benchmark-config.php.\n";
+    exit(1);
+}
+
+$failed = 0;
+
+foreach ($config['subjects'] as $key => $subject) {
+    $dir = $subjectsDir . '/' . $key;
+    $name = $subject['name'] ?? $key;
+
+    echo "Setting up subject: {$key} ({$name})...\n";
+
+    if (!is_dir($dir)) {
+        mkdir($dir, 0755, true);
+    }
+
+    // Build composer.json by merging shared + subject config
+    $composerJson = [
+        'name'        => "benchmark-subject/{$key}",
+        'description' => "Benchmark subject: {$name}",
+        'require'     => array_merge(
+            $config['shared']['require'] ?? [],
+            $subject['require'] ?? [],
+        ),
+    ];
+
+    if (isset($config['shared']['minimum-stability'])) {
+        $composerJson['minimum-stability'] = $config['shared']['minimum-stability'];
+    }
+
+    if (isset($config['shared']['prefer-stable'])) {
+        $composerJson['prefer-stable'] = $config['shared']['prefer-stable'];
+    }
+
+    if (isset($subject['repositories'])) {
+        $composerJson['repositories'] = $subject['repositories'];
+    }
+
+    if (isset($subject['autoload'])) {
+        $composerJson['autoload'] = $subject['autoload'];
+    }
+
+    $composerJson['config'] = [
+        'sort-packages' => true,
+    ];
+
+    file_put_contents(
+        $dir . '/composer.json',
+        json_encode($composerJson, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES) . "\n"
+    );
+
+    // Run composer install
+    $cmd = sprintf(
+        'cd %s && composer install --no-interaction --prefer-dist 2>&1',
+        escapeshellarg($dir)
+    );
+
+    echo "  Running composer install...\n";
+
+    $output = [];
+    $exitCode = 0;
+    exec($cmd, $output, $exitCode);
+
+    if ($exitCode !== 0) {
+        echo "  FAILED (exit code {$exitCode}):\n";
+        echo "  " . implode("\n  ", array_slice($output, -10)) . "\n\n";
+        $failed++;
+    } else {
+        echo "  OK\n";
+    }
+}
+
+$total = count($config['subjects']);
+echo "\nDone. {$total} subject(s) configured.";
+
+if ($failed > 0) {
+    echo " ({$failed} failed)";
+}
+
+echo "\n";
+
+exit($failed > 0 ? 1 : 0);

@@ -1,0 +1,73 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  benchmark:
+    name: Benchmarks (PHP ${{ matrix.php-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        php-version: ['8.2', '8.3']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: mbstring
+          coverage: none
+
+      - name: Install harness dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Setup benchmark subjects
+        run: make setup
+
+      - name: Run benchmarks
+        run: |
+          vendor/bin/phpbench run \
+            --report=compare \
+            --retry-threshold=10 \
+            --iterations=5 \
+            --revs=500 \
+            --progress=dots
+
+      - name: Generate Markdown report
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## Benchmark Results (PHP ${{ matrix.php-version }})" > benchmark-report.md
+          echo "" >> benchmark-report.md
+          echo '```' >> benchmark-report.md
+          vendor/bin/phpbench run \
+            --report=compare \
+            --retry-threshold=10 \
+            --iterations=5 \
+            --revs=500 \
+            --progress=none 2>/dev/null >> benchmark-report.md
+          echo '```' >> benchmark-report.md
+
+      - name: Post PR comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: benchmark-${{ matrix.php-version }}
+          path: benchmark-report.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results-php${{ matrix.php-version }}
+          path: |
+            .phpbench/
+            reports/
+          retention-days: 30

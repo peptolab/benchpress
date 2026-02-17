@@ -1,0 +1,29 @@
+{
+    "$schema": "./vendor/phpbench/phpbench/phpbench.schema.json",
+    "runner.bootstrap": "benchmarks/bootstrap.php",
+    "runner.path": "benchmarks/Bench",
+    "runner.retry_threshold": 5,
+    "runner.time_unit": "microseconds",
+    "runner.iterations": 10,
+    "runner.revs": 1000,
+    "runner.warmup": 5,
+    "storage.driver": "xml",
+    "storage.xml_storage_path": ".phpbench/storage",
+
+    "report.generators": {
+        "compare": {
+            "generator": "expression",
+            "title": "Library Comparison",
+            "cols": {
+                "benchmark": "benchmark_name",
+                "subject": "subject_name",
+                "mem_peak": "max(result_mem_peak) as bytes",
+                "mode": "mode(result_time_avg) as time_unit",
+                "best": "min(result_time_avg) as time_unit",
+                "worst": "max(result_time_avg) as time_unit",
+                "rstdev": "format(\"%s%%\", rstdev(result_time_avg))"
+            },
+            "break": ["subject_name"]
+        }
+    }
+}
