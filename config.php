@@ -4,7 +4,7 @@
  * Benchmark subject configuration.
  *
  * Each entry in 'subjects' defines a library to benchmark.
- * The key (e.g., 'stable', 'beta') is used as:
+ * The key (e.g., 'larry', 'moe') is used as:
  *   - The directory name under subjects/
  *   - The value returned by getSubjectKey() in benchmark classes
  *
@@ -13,26 +13,47 @@
 
 return [
     'subjects' => [
-        'stable' => [
-            'name'    => 'PhpDb Stable',
-            'require' => [
-                'peptolab/php-db' => '^0.6',
-            ],
-        ],
-        'beta' => [
-            'name'         => 'PhpDb Beta',
-            'require'      => [
-                'peptolab/php-db' => 'dev-feature-eager',
-            ],
-            'repositories' => [
-                [
-                    'type' => 'vcs',
-                    'url'  => 'https://github.com/peptolab/php-db.git',
-                ],
-            ],
-        ],
+        // ── Example: Composer package (public registry) ─────────────
+        //
+        // 'larry' => [
+        //     'name'    => 'Larry (Stable)',
+        //     'require' => [
+        //         'vendor/package' => '^1.0',
+        //     ],
+        // ],
+
+        // ── Example: VCS repository (GitHub branch/fork) ────────────
+        //
+        // 'moe' => [
+        //     'name'         => 'Moe (Beta)',
+        //     'require'      => [
+        //         'vendor/package' => 'dev-feature-branch',
+        //     ],
+        //     'repositories' => [
+        //         [
+        //             'type' => 'vcs',
+        //             'url'  => 'https://github.com/youruser/package.git',
+        //         ],
+        //     ],
+        // ],
+
+        // ── Example: Local path repository ──────────────────────────
+        //
+        // 'curly' => [
+        //     'name'         => 'Curly (Local)',
+        //     'require'      => [
+        //         'vendor/package' => '@dev',
+        //     ],
+        //     'repositories' => [
+        //         [
+        //             'type' => 'path',
+        //             'url'  => '/absolute/path/to/local/package',
+        //         ],
+        //     ],
+        // ],
     ],
 
+    // Shared Composer config applied to all subjects
     'shared' => [
         'minimum-stability' => 'dev',
         'prefer-stable'     => true,
