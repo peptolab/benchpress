@@ -7,8 +7,25 @@ on:
     branches: [main]
 
 jobs:
+  check-subjects:
+    name: Check for configured subjects
+    runs-on: ubuntu-latest
+    outputs:
+      has_subjects: ${{ steps.check.outputs.has_subjects }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if php -r "exit(empty((require 'config.php')['subjects']) ? 1 : 0);"; then
+            echo "has_subjects=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_subjects=false" >> "$GITHUB_OUTPUT"
+          fi
+
   benchmark:
     name: Benchmarks (PHP ${{ matrix.php-version }})
+    needs: check-subjects
+    if: needs.check-subjects.outputs.has_subjects == 'true'
     runs-on: ubuntu-latest
 
     strategy:

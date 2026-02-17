@@ -5,3 +5,4 @@
 /reports/*.csv
 /reports/*.html
 /.phpunit.cache
+/.phpcs-cache
