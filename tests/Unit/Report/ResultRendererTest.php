@@ -13,6 +13,7 @@ use function str_contains;
 
 /**
  * @phpstan-import-type ResultSet from ResultRenderer
+ * @phpstan-import-type MemorySet from ResultRenderer
  */
 class ResultRendererTest extends TestCase
 {
@@ -24,11 +25,14 @@ class ResultRendererTest extends TestCase
     /** @var list<string> */
     private array $subjects;
 
+    /** @var MemorySet */
+    private array $memoryResults;
+
     protected function setUp(): void
     {
-        $this->renderer = new ResultRenderer();
-        $this->subjects = ['Alpha', 'Beta'];
-        $this->results  = [
+        $this->renderer      = new ResultRenderer();
+        $this->subjects      = ['Alpha', 'Beta'];
+        $this->results       = [
             'benchSelect' => [
                 'Alpha' => [
                     'mean'   => 1_000.0,
@@ -46,6 +50,12 @@ class ResultRendererTest extends TestCase
                     'stdev'  => 100.0,
                     'rstdev' => 5.0,
                 ],
+            ],
+        ];
+        $this->memoryResults = [
+            'benchSelect' => [
+                'Alpha' => 1_048_576.0,
+                'Beta'  => 2_097_152.0,
             ],
         ];
     }
@@ -181,5 +191,65 @@ class ResultRendererTest extends TestCase
         $output = $this->renderer->renderCli($results, $this->subjects);
 
         self::assertStringNotContainsString('x)', $output);
+    }
+
+    #[Test]
+    public function renderCliIncludesMemorySection(): void
+    {
+        $output = $this->renderer->renderCli($this->results, $this->subjects, $this->memoryResults);
+
+        self::assertStringContainsString('Peak Memory', $output);
+        self::assertStringContainsString('1.00MB', $output);
+        self::assertStringContainsString('2.00MB', $output);
+    }
+
+    #[Test]
+    public function renderCliMemoryShowsRatioForHigherUsage(): void
+    {
+        $output = $this->renderer->renderCli($this->results, $this->subjects, $this->memoryResults);
+
+        self::assertStringContainsString('2.0x', $output);
+    }
+
+    #[Test]
+    public function renderCliOmitsMemorySectionWhenEmpty(): void
+    {
+        $output = $this->renderer->renderCli($this->results, $this->subjects, []);
+
+        self::assertStringNotContainsString('Peak Memory', $output);
+    }
+
+    #[Test]
+    public function renderMarkdownIncludesMemorySection(): void
+    {
+        $output = $this->renderer->renderMarkdown($this->results, $this->subjects, $this->memoryResults);
+
+        self::assertStringContainsString('### Peak Memory', $output);
+        self::assertStringContainsString('1.00MB', $output);
+        self::assertStringContainsString('2.00MB', $output);
+    }
+
+    #[Test]
+    public function renderCsvIncludesMemorySection(): void
+    {
+        $output = $this->renderer->renderCsv($this->results, $this->subjects, $this->memoryResults);
+
+        self::assertStringContainsString('mem_peak', $output);
+        self::assertStringContainsString('1048576', $output);
+        self::assertStringContainsString('2097152', $output);
+    }
+
+    #[Test]
+    public function renderJsonIncludesMemoryData(): void
+    {
+        $output = $this->renderer->renderJson($this->results, $this->subjects, $this->memoryResults);
+
+        /** @var array{subjects: list<string>, results: list<array<string, mixed>>} $data */
+        $data = json_decode($output, true);
+
+        /** @var array<string, mixed> $alphaStats */
+        $alphaStats = $data['results'][0]['Alpha'];
+        self::assertArrayHasKey('mem_peak', $alphaStats);
+        self::assertEquals(1_048_576, $alphaStats['mem_peak']);
     }
 }

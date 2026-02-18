@@ -105,8 +105,10 @@ foreach ($config['subjects'] as $key => $subject) {
  * Extract results.
  *
  * Structure: $results[methodName][subjectLabel] = stats
+ *            $memoryResults[methodName][subjectLabel] = peakBytes
  */
 $results = [];
+$memoryResults = [];
 $subjects = [];
 
 foreach ($xml->suite->benchmark ?? [] as $benchmark) {
@@ -149,6 +151,18 @@ foreach ($xml->suite->benchmark ?? [] as $benchmark) {
                 'stdev'  => (float) $stats['stdev'],
                 'rstdev' => (float) ($stats['rstdev'] ?? 0),
             ];
+
+            /** Extract peak memory from iteration elements. */
+            $peakMemory = 0.0;
+            foreach ($variant->iteration ?? [] as $iteration) {
+                $memPeak = (float) ($iteration['mem-peak'] ?? 0);
+                if ($memPeak > $peakMemory) {
+                    $peakMemory = $memPeak;
+                }
+            }
+            if ($peakMemory > 0) {
+                $memoryResults[$method][$subjectLabel] = $peakMemory;
+            }
         }
     }
 }
@@ -159,6 +173,7 @@ if (empty($results)) {
 }
 
 ksort($results);
+ksort($memoryResults);
 
 /**
  * Output in the requested format.
@@ -167,8 +182,8 @@ ksort($results);
 $renderer = new ResultRenderer();
 
 echo match ($format) {
-    'cli'  => $renderer->renderCli($results, $subjects),
-    'md'   => $renderer->renderMarkdown($results, $subjects),
-    'csv'  => $renderer->renderCsv($results, $subjects),
-    'json' => $renderer->renderJson($results, $subjects),
+    'cli'  => $renderer->renderCli($results, $subjects, $memoryResults),
+    'md'   => $renderer->renderMarkdown($results, $subjects, $memoryResults),
+    'csv'  => $renderer->renderCsv($results, $subjects, $memoryResults),
+    'json' => $renderer->renderJson($results, $subjects, $memoryResults),
 };

@@ -37,6 +37,7 @@ use const JSON_UNESCAPED_UNICODE;
  *     rstdev: float,
  * }
  * @phpstan-type ResultSet array<string, non-empty-array<string, Stats>>
+ * @phpstan-type MemorySet array<string, non-empty-array<string, float>>
  */
 class ResultRenderer
 {
@@ -45,8 +46,9 @@ class ResultRenderer
      *
      * @param ResultSet    $results
      * @param list<string> $subjects
+     * @param MemorySet    $memoryResults
      */
-    public function renderCli(array $results, array $subjects): string
+    public function renderCli(array $results, array $subjects, array $memoryResults = []): string
     {
         $testWidth = max(4, ...array_map('strlen', array_keys($results)));
         $colWidth  = max(10, ...array_map('strlen', $subjects));
@@ -78,6 +80,34 @@ class ResultRenderer
             $output .= $row . "\n";
         }
 
+        if (! empty($memoryResults)) {
+            $output   .= "\nPeak Memory\n";
+            $memHeader = str_pad('Test', $testWidth);
+            foreach ($subjects as $s) {
+                $memHeader .= '  ' . str_pad($s, $colWidth);
+            }
+            $output .= $memHeader . "\n";
+            $output .= str_repeat('─', strlen(rtrim($memHeader))) . "\n";
+
+            foreach ($memoryResults as $method => $data) {
+                $lowest = min($data);
+
+                $row = str_pad($method, $testWidth);
+                foreach ($subjects as $s) {
+                    if (isset($data[$s])) {
+                        $mem    = MemoryFormatter::format($data[$s]);
+                        $ratio  = $data[$s] / $lowest;
+                        $suffix = $ratio > 1.05 ? sprintf(' (%.1fx)', $ratio) : '';
+                        $cell   = $mem . $suffix;
+                    } else {
+                        $cell = '-';
+                    }
+                    $row .= '  ' . str_pad($cell, $colWidth);
+                }
+                $output .= $row . "\n";
+            }
+        }
+
         return $output;
     }
 
@@ -86,8 +116,9 @@ class ResultRenderer
      *
      * @param ResultSet    $results
      * @param list<string> $subjects
+     * @param MemorySet    $memoryResults
      */
-    public function renderMarkdown(array $results, array $subjects): string
+    public function renderMarkdown(array $results, array $subjects, array $memoryResults = []): string
     {
         $output = '| Test |';
         foreach ($subjects as $s) {
@@ -118,6 +149,36 @@ class ResultRenderer
             $output .= "\n";
         }
 
+        if (! empty($memoryResults)) {
+            $output .= "\n### Peak Memory\n\n";
+            $output .= '| Test |';
+            foreach ($subjects as $s) {
+                $output .= " {$s} |";
+            }
+            $output .= "\n|------|";
+            foreach ($subjects as $s) {
+                $output .= str_repeat('-', strlen($s) + 2) . '|';
+            }
+            $output .= "\n";
+
+            foreach ($memoryResults as $method => $data) {
+                $lowest = min($data);
+
+                $output .= "| {$method} |";
+                foreach ($subjects as $s) {
+                    if (isset($data[$s])) {
+                        $mem     = MemoryFormatter::format($data[$s]);
+                        $ratio   = $data[$s] / $lowest;
+                        $suffix  = $ratio > 1.05 ? sprintf(' (%.1fx)', $ratio) : '';
+                        $output .= " {$mem}{$suffix} |";
+                    } else {
+                        $output .= ' - |';
+                    }
+                }
+                $output .= "\n";
+            }
+        }
+
         return $output;
     }
 
@@ -126,8 +187,9 @@ class ResultRenderer
      *
      * @param ResultSet    $results
      * @param list<string> $subjects
+     * @param MemorySet    $memoryResults
      */
-    public function renderCsv(array $results, array $subjects): string
+    public function renderCsv(array $results, array $subjects, array $memoryResults = []): string
     {
         $stream = fopen('php://memory', 'r+');
         assert(is_resource($stream));
@@ -139,6 +201,20 @@ class ResultRenderer
                 $row[] = isset($data[$s]) ? round($data[$s]['mean'], 2) : '';
             }
             fputcsv($stream, $row);
+        }
+
+        if (! empty($memoryResults)) {
+            fputcsv($stream, []);
+            $memHeaders = array_map(fn($s) => "{$s} (mem_peak)", $subjects);
+            fputcsv($stream, array_merge(['test'], $memHeaders));
+
+            foreach ($memoryResults as $method => $data) {
+                $row = [$method];
+                foreach ($subjects as $s) {
+                    $row[] = isset($data[$s]) ? (int) $data[$s] : '';
+                }
+                fputcsv($stream, $row);
+            }
         }
 
         rewind($stream);
@@ -153,8 +229,9 @@ class ResultRenderer
      *
      * @param ResultSet    $results
      * @param list<string> $subjects
+     * @param MemorySet    $memoryResults
      */
-    public function renderJson(array $results, array $subjects): string
+    public function renderJson(array $results, array $subjects, array $memoryResults = []): string
     {
         $output = [
             'subjects' => $subjects,
@@ -166,6 +243,9 @@ class ResultRenderer
             foreach ($subjects as $s) {
                 if (isset($data[$s])) {
                     $entry[$s] = $data[$s];
+                    if (isset($memoryResults[$method][$s])) {
+                        $entry[$s]['mem_peak'] = $memoryResults[$method][$s];
+                    }
                 }
             }
             $output['results'][] = $entry;
